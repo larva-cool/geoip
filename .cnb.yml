@@ -1,4 +1,3 @@
-# 推送标签时需要执行的命令
 tag_push:
   - name: docker构建推送流水线
     services:
@@ -8,7 +7,7 @@ tag_push:
         script: docker login -u ${CNB_TOKEN_USER_NAME} -p "${CNB_TOKEN}"
           ${CNB_DOCKER_REGISTRY}
       - name: docker build
-        script: docker build --build-arg ENV=prod -t
+        script: docker build -t
           ${CNB_DOCKER_REGISTRY}/${CNB_REPO_SLUG_LOWERCASE}:latest .
       - name: docker push
         script: docker push ${CNB_DOCKER_REGISTRY}/${CNB_REPO_SLUG_LOWERCASE}:latest
@@ -35,7 +34,7 @@ push:
         script: docker login -u ${CNB_TOKEN_USER_NAME} -p "${CNB_TOKEN}"
           ${CNB_DOCKER_REGISTRY}
       - name: docker build
-        script: docker build --build-arg ENV=develop -t
+        script: docker build -t
           ${CNB_DOCKER_REGISTRY}/${CNB_REPO_SLUG_LOWERCASE}:${CNB_BRANCH} .
       - name: docker push
         script: docker push
