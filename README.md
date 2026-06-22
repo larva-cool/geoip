@@ -2,7 +2,7 @@
 
 GeoIP 是一个基于 Go 的轻量级 IP 信息查询服务，使用 MaxMind MMDB 数据库文件 `Merged-IP.mmdb` 提供 IP 地理位置、ASN、ISP、代理/VPN 等信息查询能力。
 
-项目内置 API Key 鉴权保护，支持从 `.env` 文件或系统环境变量读取密钥。
+项目支持可选 API Key 鉴权，可从 `.env` 文件或系统环境变量读取密钥；未配置密钥时接口会直接放行。
 
 ## 功能特性
 
@@ -14,7 +14,7 @@ GeoIP 是一个基于 Go 的轻量级 IP 信息查询服务，使用 MaxMind MMD
 - 未传入 IP 时自动识别客户端真实 IP
 - 本地缺少数据库文件时自动下载
 - 支持手动下载或更新 IP 数据库
-- 支持 API Key 鉴权
+- 支持可选 API Key 鉴权
 - 支持通过 `.env` 管理环境变量
 
 ## 环境要求
@@ -30,9 +30,9 @@ go mod tidy
 
 ## 快速开始
 
-### 配置 API Key
+### 可选配置 API Key
 
-推荐在项目根目录创建 `.env` 文件：
+如需启用接口鉴权，可在项目根目录创建 `.env` 文件：
 
 ```env
 GEOIP_API_KEY=your_api_key_here
@@ -44,11 +44,7 @@ GEOIP_API_KEY=your_api_key_here
 export GEOIP_API_KEY=your_api_key_here
 ```
 
-如果未配置 `GEOIP_API_KEY`，服务会启用默认测试密钥：
-
-```text
-geoip_secret_123
-```
+如果未配置 `GEOIP_API_KEY`，服务不会启用 API Key 鉴权，所有请求会直接放行。
 
 ### 启动服务
 
@@ -70,7 +66,7 @@ go run . -p 8080
 
 ## 鉴权方式
 
-所有接口都需要提供 API Key。
+只有配置了 `GEOIP_API_KEY` 时，接口才需要提供 API Key。
 
 ### 通过 Header 传入
 
@@ -84,7 +80,7 @@ curl -H "X-API-Key: your_api_key_here" "http://127.0.0.1:8080/s?ip=8.8.8.8"
 curl "http://127.0.0.1:8080/s?ip=8.8.8.8&key=your_api_key_here"
 ```
 
-如果 API Key 缺失或错误，服务会返回 `401 Unauthorized`：
+启用鉴权后，如果 API Key 缺失或错误，服务会返回 `401 Unauthorized`：
 
 ```json
 {
@@ -124,9 +120,9 @@ go run . -d "https://example.com/path/to/Merged-IP.mmdb"
 
 ## 接口说明
 
-所有接口均返回 JSON，且都需要鉴权。
+所有接口均返回 JSON。
 
-以下示例使用 Header 方式传入 API Key。
+以下示例不包含 API Key；如果已配置 `GEOIP_API_KEY`，请按上方鉴权方式传入密钥。
 
 ### 完整查询
 
@@ -139,13 +135,13 @@ go run . -d "https://example.com/path/to/Merged-IP.mmdb"
 示例：
 
 ```bash
-curl -H "X-API-Key: your_api_key_here" "http://127.0.0.1:8080/?ip=8.8.8.8"
+curl "http://127.0.0.1:8080/?ip=8.8.8.8"
 ```
 
 批量查询：
 
 ```bash
-curl -H "X-API-Key: your_api_key_here" "http://127.0.0.1:8080/?ip=8.8.8.8,1.1.1.1"
+curl "http://127.0.0.1:8080/?ip=8.8.8.8,1.1.1.1"
 ```
 
 响应示例：
@@ -188,7 +184,7 @@ curl -H "X-API-Key: your_api_key_here" "http://127.0.0.1:8080/?ip=8.8.8.8,1.1.1.
 示例：
 
 ```bash
-curl -H "X-API-Key: your_api_key_here" "http://127.0.0.1:8080/s?ip=8.8.8.8"
+curl "http://127.0.0.1:8080/s?ip=8.8.8.8"
 ```
 
 响应字段：
@@ -244,7 +240,7 @@ curl -H "X-API-Key: your_api_key_here" "http://127.0.0.1:8080/s?ip=8.8.8.8"
 示例：
 
 ```bash
-curl -H "X-API-Key: your_api_key_here" "http://127.0.0.1:8080/s/en?ip=8.8.8.8"
+curl "http://127.0.0.1:8080/s/en?ip=8.8.8.8"
 ```
 
 支持语言：
@@ -273,7 +269,7 @@ curl -H "X-API-Key: your_api_key_here" "http://127.0.0.1:8080/s/en?ip=8.8.8.8"
 示例：
 
 ```bash
-curl -H "X-API-Key: your_api_key_here" "http://127.0.0.1:8080/s"
+curl "http://127.0.0.1:8080/s"
 ```
 
 ## 参数说明
@@ -287,7 +283,7 @@ curl -H "X-API-Key: your_api_key_here" "http://127.0.0.1:8080/s"
 
 | 变量名 | 必填 | 默认值 | 说明 |
 | --- | --- | --- | --- |
-| `GEOIP_API_KEY` | 否 | `geoip_secret_123` | HTTP 接口鉴权密钥 |
+| `GEOIP_API_KEY` | 否 | 空 | HTTP 接口鉴权密钥；未配置时不启用鉴权 |
 
 ## 开发
 
@@ -313,7 +309,7 @@ go test ./...
 
 - `Merged-IP.mmdb` 是运行时数据库文件，通常不建议提交到版本库。
 - `.env` 可能包含敏感密钥，通常不建议提交到版本库。
-- 生产环境请配置自定义 `GEOIP_API_KEY`，不要使用默认测试密钥。
+- 如需保护接口，请配置自定义 `GEOIP_API_KEY`。
 - 批量查询使用英文逗号分隔 IP。
 - 查询结果取决于 `Merged-IP.mmdb` 中实际包含的数据字段。
 - 简化查询中的地名语言依赖数据库内 `names` 字段是否包含对应语言。

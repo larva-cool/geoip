@@ -53,7 +53,7 @@ push:
           password: ${GITHUB_ACCESS_TOKEN}
           push_tags: "true"
           force: "true"
-      - name: sync to codeup
+      - name: Sync to codeup
         image: tencentcom/git-sync
         settings:
           target_url: https://codeup.aliyun.com/xutongle/larva-cool/geoip.git

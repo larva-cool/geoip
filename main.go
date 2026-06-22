@@ -150,20 +150,18 @@ func main() {
 		}
 	})
 
-	// 读取鉴权密钥
+	// 读取鉴权密钥，未配置时不启用鉴权
 	secretKey := os.Getenv("GEOIP_API_KEY")
+	handler := http.Handler(http.DefaultServeMux)
 	if secretKey == "" {
-		secretKey = "geoip_secret_123"
-		log.Println("⚠️  警告: 未配置 GEOIP_API_KEY，已启用默认测试密钥: geoip_secret_123")
+		log.Println("ℹ️  未配置 GEOIP_API_KEY，API Key 鉴权未启用")
 	} else {
 		log.Println("🔒 已启用 API Key 身份鉴权保护")
+		handler = AuthMiddleware(handler, secretKey)
 	}
 
-	// 使用鉴权中间件包裹默认路由
-	authedHandler := AuthMiddleware(http.DefaultServeMux, secretKey)
-
 	log.Println("🚀 服务启动，监听 http://127.0.0.1:" + port)
-	log.Fatal(http.ListenAndServe(":"+port, authedHandler))
+	log.Fatal(http.ListenAndServe(":"+port, handler))
 }
 
 // ---------------------------------------------------------
