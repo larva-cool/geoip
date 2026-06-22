@@ -105,7 +105,7 @@ const (
 )
 
 func init() {
-	_p := flag.String("p", "8066", "本地监听的端口")
+	_p := flag.String("p", "8080", "本地监听的端口")
 	_d := flag.String("d", "", "仅用于下载最新的ip地址库，保存在当前目录")
 	flag.Parse()
 
