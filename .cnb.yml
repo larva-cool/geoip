@@ -44,7 +44,7 @@ push:
     imports:
       - https://cnb.cool/larva-cool/secret/-/blob/main/git.yml
     stages:
-      - name: sync to github
+      - name: Sync to github
         image: tencentcom/git-sync
         settings:
           target_url: https://github.com/larva-cool/geoip.git
