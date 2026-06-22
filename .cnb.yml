@@ -25,8 +25,7 @@ $:
           settings:
             git_doc_dir: /data/codewiki/${CNB_REPO_SLUG}
 
-# 对所有分支的 push 事件生效
-$:
+  # 对所有分支的 push 事件生效
   push:
     - name: docker构建推送流水线
       services:
