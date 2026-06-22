@@ -318,6 +318,10 @@ go test ./...
 - 查询结果取决于 `Merged-IP.mmdb` 中实际包含的数据字段。
 - 简化查询中的地名语言依赖数据库内 `names` 字段是否包含对应语言。
 
+## 开源协议
+
+本项目基于 [MIT License](./LICENSE) 开源。
+
 ## 致谢
 
 本项目移植自 [longlegmax/goip](https://github.com/longlegmax/goip)，感谢原项目作者的开源贡献。
