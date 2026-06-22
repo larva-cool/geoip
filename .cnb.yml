@@ -1,0 +1,63 @@
+# 对所有分支的 tag_push 事件生效
+$:
+  tag_push:
+    - name: docker构建推送流水线
+      services:
+        - docker
+      stages:
+        - name: docker login
+          script: docker login -u ${CNB_TOKEN_USER_NAME} -p "${CNB_TOKEN}" ${CNB_DOCKER_REGISTRY}
+        - name: docker build
+          script: docker build -t ${CNB_DOCKER_REGISTRY}/${CNB_REPO_SLUG_LOWERCASE}:latest .
+        - name: docker push
+          script: docker push ${CNB_DOCKER_REGISTRY}/${CNB_REPO_SLUG_LOWERCASE}:latest
+
+    - name: 生成CodeWiki流水线
+      services:
+        - docker
+      docker:
+        volumes:
+          - /data/codewiki/${CNB_REPO_SLUG}:data
+      stages:
+        - name: 生成 Code Wiki
+          timeout: 2h
+          image: cnbcool/codewiki:latest
+          settings:
+            git_doc_dir: /data/codewiki/${CNB_REPO_SLUG}
+
+# 对所有分支的 push 事件生效
+$:
+  push:
+    - name: docker构建推送流水线
+      services:
+        - docker
+      stages:
+        - name: docker login
+          script: docker login -u ${CNB_TOKEN_USER_NAME} -p "${CNB_TOKEN}" ${CNB_DOCKER_REGISTRY}
+        - name: docker build
+          script: docker build -t ${CNB_DOCKER_REGISTRY}/${CNB_REPO_SLUG_LOWERCASE}:${CNB_BRANCH} .
+        - name: docker push
+          script: docker push ${CNB_DOCKER_REGISTRY}/${CNB_REPO_SLUG_LOWERCASE}:${CNB_BRANCH}
+
+    - name: 代码同步流水线
+      imports:
+        - https://cnb.cool/larva-cool/secret/-/blob/main/git.yml
+      stages:
+        - name: Sync to github
+          image: tencentcom/git-sync
+          settings:
+            target_url: https://github.com/larva-cool/geoip.git
+            auth_type: https
+            username: ${GITHUB_USERNAME}
+            password: ${GITHUB_ACCESS_TOKEN}
+            push_tags: "true"
+            force: "true"
+        - name: Sync to codeup
+          image: tencentcom/git-sync
+          settings:
+            target_url: https://codeup.aliyun.com/xutongle/larva-cool/geoip.git
+            auth_type: https
+            username: ${CODEUP_USERNAME}
+            password: ${CODEUP_PASSWORD}
+            push_tags: "true"
+            force: "true"
