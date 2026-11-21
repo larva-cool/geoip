@@ -71,7 +71,7 @@ go run . -p 8080
 ### 通过 Header 传入
 
 ```bash
-curl -H "X-API-Key: your_api_key_here" "http://127.0.0.1:8080/s?ip=8.8.8.8"
+curl -H "Authorization: Bearer your_api_key_here" "http://127.0.0.1:8080/s?ip=8.8.8.8"
 ```
 
 ### 通过 URL 参数传入
@@ -85,7 +85,7 @@ curl "http://127.0.0.1:8080/s?ip=8.8.8.8&key=your_api_key_here"
 ```json
 {
   "code": 401,
-  "hint": "Please provide '?key=YOUR_KEY' in URL or 'X-API-Key' in Header",
+  "hint": "Please provide '?key=YOUR_KEY' in URL or 'Authorization: Bearer YOUR_KEY' in Header",
   "message": "Unauthorized: Invalid or missing API Key"
 }
 ```

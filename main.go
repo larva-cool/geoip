@@ -169,8 +169,12 @@ func main() {
 // ---------------------------------------------------------
 func AuthMiddleware(next http.Handler, validKey string) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		// 1. 优先从 Header 获取，其次从 URL 查询参数获取
-		key := r.Header.Get("X-API-Key")
+		// 1. 优先从 Authorization Bearer 获取，其次从 URL 查询参数获取
+		key := ""
+		authorization := r.Header.Get("Authorization")
+		if parts := strings.SplitN(authorization, " ", 2); len(parts) == 2 && strings.EqualFold(parts[0], "Bearer") {
+			key = strings.TrimSpace(parts[1])
+		}
 		if key == "" {
 			key = r.URL.Query().Get("key")
 		}
@@ -182,7 +186,7 @@ func AuthMiddleware(next http.Handler, validKey string) http.Handler {
 			json.NewEncoder(w).Encode(map[string]interface{}{
 				"code":    401,
 				"message": "Unauthorized: Invalid or missing API Key",
-				"hint":    "Please provide '?key=YOUR_KEY' in URL or 'X-API-Key' in Header",
+				"hint":    "Please provide '?key=YOUR_KEY' in URL or 'Authorization: Bearer YOUR_KEY' in Header",
 			})
 			return
 		}
